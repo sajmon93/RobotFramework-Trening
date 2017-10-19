@@ -1,0 +1,93 @@
+*** Settings ***
+Library           Process
+Library           Collections
+Library           DateTime
+
+*** Variables ***
+@{Tab1}
+
+*** Test Cases ***
+Test Case 1.0
+    [Setup]    Variable Should Exist    ${Tab1}
+    Creating List
+    Check if empty
+    Clear list
+    Adding strings
+
+Test Case 1.1
+    [Setup]    Should Be Equal    ${PREV TEST STATUS}    PASS    FAIL
+    Checks if not empty
+    Checks if contains 100 strings
+    Check for duplicates
+    Check if string contain Execution
+
+Test Case 1.2
+    [Setup]    Should Be Equal    ${PREV TEST STATUS}    PASS
+    current_time
+    Checking last element
+
+Test Case 1.3
+    [Setup]    Variable Should Exist    ${Tab1}
+    Creating STR
+    Test Message
+    [Teardown]    Run Keyword If    '${TEST STATUS}'=='FAIL'    Fail    'TestCase 1.3 error'
+
+*** Keywords ***
+Creating List
+    @{Tab1}=    Create List
+
+Check if empty
+    Should be empty    ${Tab1}
+
+Clear List
+    ${leng}=    Get length    ${Tab1}
+    Set Suite Variable    ${leng}
+    Run keyword if    ${leng} > 0    @{Tab1}    Create List
+
+Adding strings
+    : FOR    ${index}    IN RANGE    1    101
+    \    Append to list    ${Tab1}    Execution.${index}.txt
+    Log list    ${Tab1}
+    Set Suite Variable    ${Tab1}
+
+Checks if not empty
+    Should not be empty    ${Tab1}
+    # Log List    ${Tab1}
+
+Checks if contains 100 strings
+    ${leng}=    Get length    ${Tab1}
+    Should be true    '''${leng}''' == '''100'''
+
+Check for duplicates
+    List Should Not Contain Duplicates    ${Tab1}
+
+Check if string contain Execution
+    : FOR    ${element}    IN    @{Tab1}
+    \    Should Contain Match    ${Tab1}    Execution*
+
+current_time
+    @{timelist}=    Get Time    sec min hour
+    Reverse List    ${timelist}
+    Log    ${timelist}
+    ${time}=    Catenate    SEPARATOR=-    @{timelist}
+    [Return]    ${time}
+
+Checking last element
+    ${currtimevar}=    current_time
+    Log    ${currtimevar}
+    ${last}=    Get From List    ${Tab1}    -1
+    ${lastelem}=    Convert to string    ${last}
+    Run Keyword If    '''${lastelem}'''=='''Execution.120.txt'''    Log    ${currtimevar} -Tab1 zawiera numer x
+    ...    ELSE    Log    ${currtimevar} -Tab1 nie zawiera numeru x console
+
+Creating Str
+    ${str1}=    Get from list    ${Tab1}    0
+    Convert to string    ${str1}
+    ${str2} =    Get from list    ${Tab1}    -1
+    Convert to string    ${str2}
+    ${STR}=    Set Variable    Pierwszy elment TAB1: ${str1}:Drugi element TAB2: ${str2}
+    Set Global Variable    ${STR}
+    Log    ${STR}
+
+Test Message
+    Log    Test Result:${STR}
